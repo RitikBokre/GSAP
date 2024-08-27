@@ -1,0 +1,53 @@
+@font-face {
+    font-family: cursivemy;
+    src: url('./KingsmanDemo-1GVgg.ttf');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box—sizing: border-box;
+    font—family: gilroy;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-color: #111;
+}
+
+#page1,
+#page2,
+#page3 {
+    height: 100vh;
+    width: 100%;
+}
+
+#move {
+    background-color: #d9ff06;
+    padding: 4vh 0;
+    display: flex;
+    overflow-x: hidden;
+}
+
+.marque {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3vw;
+    padding: 0 1.5vw;
+    transform: translateX(-150%);
+}
+
+.marque h1 {
+    font-size: 40px;
+    font-family: cursivemy;
+}
+
+.marque img {
+    height: 50px;
+}

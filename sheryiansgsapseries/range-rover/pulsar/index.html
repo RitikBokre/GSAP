@@ -1,0 +1,388 @@
+<script>
+  var skin_widget_2_tracker = (() => {
+    let appendDataLayerElement = (gaAct, isInteractive) => {
+      gaAct = gaAct + "_d";
+      if (typeof dataLayer !== "undefined" && !!dataLayer) {
+        dataLayer.push({
+          event: isInteractive ? "CWInteractive" : "CWNonInteractive",
+          cat: "$$campaignId",
+          act: gaAct,
+        });
+      }
+    };
+
+    let trackGAImpression = () => {
+      let container = document.querySelector(
+        ".js-impression-tracking-skin_widget_2"
+      );
+      if (container) {
+        if (typeof dataLayer !== "undefined" && !!dataLayer) {
+          let gaAct = "20_Shown_MDA";
+          appendDataLayerElement(gaAct, false);
+        }
+      }
+    };
+    let trackGAClicks = () => {
+      let clickElements = document.querySelectorAll(
+        ".js-click-tracking-skin_widget_2"
+      );
+      if (
+        clickElements.length > 0 &&
+        typeof dataLayer !== "undefined" &&
+        !!dataLayer
+      ) {
+        for (let i = 0; i < clickElements.length; i++) {
+          clickElements[i].addEventListener("click", function () {
+            let ctaText = this.getAttribute("data-cta");
+            let capitalizedCtaText =
+              ctaText &&
+              ctaText.replace(/\w+/g, function (w) {
+                return w[0].toUpperCase() + w.slice(1).toLowerCase();
+              });
+            capitalizedCtaText =
+              capitalizedCtaText && capitalizedCtaText.replace(/\s/g, "");
+            let gaAct = "20_" + (capitalizedCtaText || "") + "Click_MDA";
+            appendDataLayerElement(gaAct, true);
+          });
+        }
+      }
+    };
+
+    //brighu tracking block starts
+
+    /* label is maintained in lower case without white spaces as per convention .
+          campaignid,templateid, target model name,cityId are populated on carwaleweb side when this script runs on page
+         */
+    let brighuTrackingObject = () => {
+      return {
+        businesstype: "es",
+        mediapropertyid: 20,
+        mediapropertytype: "static",
+        featuredcampaignid: $$campaignId,
+        cityid: $$cityId,
+        templateid: $$templateId,
+        applicationid: $$applicationId,
+        pageid: $$pageId,
+        featuredmodelid: 196,
+      };
+    };
+    let trackBrighuImpression = () => {
+      let container = document.querySelector(
+        ".js-impression-tracking-skin_widget_2"
+      );
+      if (container) {
+        let trackObject = brighuTrackingObject();
+        let gaCat = "MediaProperty";
+        let gaAct = "MediaImpression";
+        let gaLabel = Object.keys(trackObject)
+          .filter((key) => !!trackObject[key])
+          .map((key) => key + "=" + trackObject[key])
+          .join("|");
+
+        try {
+          trackCustomData(gaCat, gaAct, gaLabel);
+        } catch (error) {
+          console.log("trackCustomData function is not defined");
+        }
+      }
+    };
+    let trackBrighuClicks = () => {
+      let clickElements = document.querySelectorAll(
+        ".js-click-tracking-skin_widget_2"
+      );
+      if (
+        clickElements.length > 0 &&
+        typeof dataLayer !== "undefined" &&
+        !!dataLayer
+      ) {
+        for (let i = 0; i < clickElements.length; i++) {
+          clickElements[i].addEventListener("click", function () {
+            let trackObject = brighuTrackingObject();
+            let gaCat = "MediaProperty";
+            let gaAct = "MediaClick";
+            let ctaText = this.getAttribute("data-cta")
+              .split(" ")
+              .join("")
+              .toLowerCase();
+            let gaLabel = Object.keys(trackObject)
+              .filter((key) => !!trackObject[key])
+              .map((key) => key + "=" + trackObject[key])
+              .join("|");
+            gaLabel += "|ctatext=" + ctaText;
+
+            try {
+              trackCustomData(gaCat, gaAct, gaLabel);
+            } catch (error) {
+              console.log("trackCustomData function is not defined");
+            }
+          });
+        }
+      }
+    };
+
+    // brighu tracking block ends
+
+    let animateImages = () => {
+      let wrapperList = document.querySelectorAll(".es-bike-color");
+      wrapperList?.forEach((bike, index) => {
+        if (bike && index != 0) {
+          bike.classList.add("es-color-animation");
+          bike.style.animationDelay = `${1 + (index - 1) * 5}s`;
+          let bikeAnimationObj = bike.getAnimations();
+          if (bikeAnimationObj[0]) {
+            bikeAnimationObj[0].onfinish = () => {
+              if (
+                bike.querySelector(".es-bike-color-text") &&
+                wrapperList[index - 1].querySelector(".es-bike-color-text")
+              ) {
+                bike.querySelector(".es-bike-color-text").style.opacity = 1;
+                bike.style.width = "100%";
+                wrapperList[index - 1].querySelector(
+                  ".es-bike-color-text"
+                ).style.opacity = 0;
+              }
+            };
+          }
+        }
+      });
+    };
+
+    let init = () => {
+      let trackingElement = document.querySelector(
+        ".js-impression-tracking-skin_widget_2"
+      );
+      animateImages();
+
+      if (trackingElement) {
+        const handleIntersection = (entries, observer) => {
+          entries?.forEach((entry) => {
+            if (entry?.isIntersecting) {
+              trackGAImpression();
+              trackBrighuImpression();
+              animateImages();
+              observer.unobserve(trackingElement);
+            }
+          });
+        };
+        const observer = new IntersectionObserver(handleIntersection, {
+          rootMargin: "-250px",
+        });
+        observer.observe(trackingElement);
+        trackGAClicks();
+        trackBrighuClicks();
+      }
+    };
+    let deferredInit = () => {
+      /*
+          Since this script goes into Helmet, it is loaded first, and we have to wait for everything else to be loaded.
+          On the other hand, in CSR, we don't have the load event.
+          Note : If the script is moved out of Helmet, we can get rid of the eventListener. Only one call would suffice.
+          */
+      let trackingElements = document.querySelectorAll(
+        ".js-click-tracking-skin_widget_2, .js-impression-tracking-skin_widget_2"
+      );
+      if (trackingElements.length) {
+        init();
+      } else {
+        window.addEventListener("load", function () {
+          init();
+        });
+      }
+    };
+    let getModelCityInformation = () => {
+      let targetMakeModel = getMakeModelName();
+      if (targetMakeModel === null) {
+        return ["", getCookie("_CustCityMaster")].join("|");
+      }
+      return ["", getCookie("_CustCityMaster"), targetMakeModel].join("|");
+    };
+    let getCookie = (name) => {
+      let parts = document.cookie.split("; " + name + "=");
+      if (parts.length < 2) {
+        // Cookie doesnt exist
+        return "NA";
+      }
+      // Cookie exists and you will find its value in the last element of parts
+      let cookieValue = parts.pop();
+      /*
+          Depending on where the cookie appears in the list, there may or may not be more cookies
+          in the popped string, separated by a semi-colon.
+          In any case, we want the first element after split
+          */
+      let cityName = cookieValue.split(";").shift();
+      return cityName == "" || cityName == "Select City" ? "NA" : cityName;
+    };
+
+    let getMakeModelName = () => {
+      try {
+        let url = window.location.href;
+        let queryStringStartsAt = url.indexOf("?");
+        if (queryStringStartsAt !== -1) url = url.slice(0, queryStringStartsAt);
+        const modelEndpointLiteral =
+          "([a-zA-Z0-9_-]+)-cars/" +
+          "((?!news|expert-reviews|features|videos)[a-zA-Z0-9_-]+)/";
+        const modelEndpoint = new RegExp(modelEndpointLiteral + "$");
+        const versionEndpoint = new RegExp(
+          modelEndpointLiteral +
+            "(" +
+            "(?!colours|images|360-view|mileage|news|expert-reviews|features|user-reviews)" + // Exclude these
+            "[a-zA-Z0-9_-]+)/$"
+        ); // version masking name
+        const picEndpoint = new RegExp(modelEndpointLiteral + "price-in-.+");
+        const modelCaptureGroups = new RegExp(modelEndpointLiteral);
+
+        let test =
+          modelEndpoint.test(url) ||
+          versionEndpoint.test(url) ||
+          picEndpoint.test(url);
+        if (!test) return null;
+        let match = url.match(modelCaptureGroups);
+        return [match[1], match[2]].join("_");
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    };
+
+    return {
+      init,
+      deferredInit,
+      appendDataLayerElement,
+    };
+  })();
+
+  if (typeof skin_widget_2_tracker !== "undefined" && !!skin_widget_2_tracker) {
+    skin_widget_2_tracker.deferredInit();
+  }
+</script>
+<style>
+  .media-skin_widget_2 {
+    height: 400px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .media-skin_widget_2-cta-container-1 {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .es-bikes-wrapper {
+    position: relative;
+    width: 420px;
+    height: 302px;
+    top: 67px;
+    left: 52%;
+    transform: translateX(-50%);
+  }
+
+  .es-bike-color:not(:first-child) {
+    width: 0%;
+  }
+
+  .es-bike-color {
+    position: absolute;
+    height: 310px;
+    overflow: hidden;
+  }
+
+  .es-bike-color-text {
+    display: inline-block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%);
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    transition: opacity 0.5s;
+  }
+
+  .es-hidden-txt {
+    opacity: 0;
+  }
+
+  .es-color-animation {
+    animation-name: widthAnimation;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+  }
+
+  @keyframes widthAnimation {
+    0% {
+      width: 0%;
+    }
+
+    80% {
+      width: 100%;
+    }
+
+    100% {
+      width: 100%;
+    }
+  }
+
+  .es-bike-shadow {
+    position: absolute;
+    bottom: 21px;
+    left: -36px;
+    scale: 0.85;
+  }
+</style>
+<div class="media-skin_widget_2 js-impression-tracking-skin_widget_2">
+  <a
+    href="https://www.bajajauto.com/bikes/pulsar/pulsar-ns400?utm_source=Bikewale&utm_campaign=Bikewale_Skin_NS400&utm_medium=Media&utm_customdetails1=PulsarNS_Awareness_Launch&utm_customdetails2=Display_Aggregator"
+    title="Know More"
+    target="_blank"
+    rel="nofollow noopener"
+    data-cta="Know More"
+    class="media-skin_widget_2-cta-container-1 js-click-tracking-skin_widget_2"
+  >
+  </a>
+  <div class="es-bikes-wrapper">
+    <div class="es-bike-color">
+      <img
+        src="https://imgd.aeplcdn.com/0x0/media/cw/hycpbeb_1757403.png"
+        alt="​Brooklyn Black"
+      />
+      <span class="es-bike-color-text">​Brooklyn Black</span>
+    </div>
+    <div class="es-bike-color">
+      <img
+        src="https://imgd.aeplcdn.com/0x0/media/cw/2vepbeb_1757405.png"
+        alt="Glossy Racing Red"
+      />
+      <span class="es-hidden-txt es-bike-color-text">Glossy Racing Red</span>
+    </div>
+    <div class="es-bike-color">
+      <img
+        src="https://imgd.aeplcdn.com/0x0/media/cw/fbaqbeb_1757431.png"
+        alt="​Pearl Metallic White"
+      />
+      <span class="es-hidden-txt es-bike-color-text"
+        >​Pearl Metallic White</span
+      >
+    </div>
+    <div class="es-bike-color">
+      <img
+        src="https://imgd.aeplcdn.com/0x0/media/cw/3c7pbeb_1757415.png"
+        alt="Pewter Grey"
+      />
+      <span class="es-hidden-txt es-bike-color-text">Pewter Grey</span>
+    </div>
+    <img
+      src="https://imgd.aeplcdn.com/0x0/media/bw/ilhsbeb_1757529.png"
+      alt="shadow"
+      class="es-bike-shadow"
+    />
+  </div>
+</div>

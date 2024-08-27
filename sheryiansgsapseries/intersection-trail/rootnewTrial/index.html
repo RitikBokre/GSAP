@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intersection Observer Example</title>
+    <style>
+      body {
+        height: 300vh;
+        margin: 0;
+      }
+
+      .fixed-element {
+        position: fixed;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 180px; /* Fixed element height */
+        background-color: lightblue;
+        transform: translateY(-50%); /* Center vertically */
+        z-index: -1;
+      }
+      .target {
+        height: 100px;
+        background-color: coral;
+        position: relative;
+        margin-top: 3000px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="target">
+      <div class="fixed-element">Fixed Element</div>
+      Target Element
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const target = document.querySelector(".target");
+        const fixedElement = document.querySelector(".fixed-element");
+
+        const observerOptions = {
+          root: target,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              console.log(
+                "Target element is intersecting with the fixed element"
+              );
+            } else {
+              console.log(
+                "Target element is not intersecting with the fixed element"
+              );
+            }
+          });
+        }, observerOptions);
+
+        observer.observe(fixedElement);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swiper</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .carousel-container {
+        width: 300px;
+      }
+
+      .swiper-wrapper {
+        width: 100%;
+        border-radius: 12px;
+        border: 6px solid #09bec9;
+        overflow: hidden;
+      }
+
+      .swiper-container {
+        display: flex;
+      }
+
+      .swiper-slide-1 {
+        background: url(https://imgd.aeplcdn.com/0x0/media/cw/z7n80eb_1755347.png)
+          center center;
+      }
+
+      .swiper-slide-2 {
+        background: url(https://imgd.aeplcdn.com/0x0/media/cw/8fq80eb_1755351.png)
+          center center;
+      }
+
+      .swiper-slide-3 {
+        background: url(https://imgd.aeplcdn.com/0x0/media/cw/bv780eb_1755345.png)
+          center center;
+      }
+
+      .swiper-slide-4 {
+        background: url(https://imgd.aeplcdn.com/0x0/media/cw/3j680eb_1755349.png)
+          center center;
+      }
+
+      .swiper-slide {
+        width: 300px;
+        height: 169px;
+        flex-shrink: 0;
+        background-size: contain;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="carousel-container">
+      <div class="swiper-wrapper">
+        <div class="swiper-container">
+          <div class="swiper-slide swiper-slide-1"></div>
+          <div class="swiper-slide swiper-slide-2"></div>
+          <div class="swiper-slide swiper-slide-3"></div>
+          <div class="swiper-slide swiper-slide-4"></div>
+        </div>
+      </div>
+      <!-- <div class="swiper-description-wrapper">
+        <div class="slide-description inactive-text">
+          Putting the best wheel forward
+        </div>
+        <div class="slide-description active-text">Loooong range</div>
+        <div class="slide-description inactive-text">Safe. Sound. Solid.</div>
+        <div class="slide-description inactive-text">Clear & Colourful</div>
+        <div class="slide-description inactive-text">
+          Putting the best wheel forward
+        </div>
+      </div> -->
+    </div>
+    <script>
+      const container = document.querySelector(".swiper-container");
+      let slides = document.querySelectorAll(".swiper-slide");
+      let activeIndex = 1;
+      let intervalTime = 2000;
+      let intervalId;
+
+      let firstNode = slides[0].cloneNode(true);
+      firstNode.id = "first";
+      let lastNode = slides[slides.length - 1].cloneNode(true);
+      lastNode.id = "last";
+
+      container.append(firstNode);
+      container.prepend(lastNode);
+
+      const slideWidth = slides[activeIndex].clientWidth;
+
+      container.style.transform = `translateX(${-slideWidth}px)`;
+
+      const moveToNextSlide = () => {
+        console.log("start move", activeIndex);
+        slides = document.querySelectorAll(".swiper-slide");
+        if (activeIndex >= slides.length - 1) return;
+
+        activeIndex++;
+        container.style.transform = `translateX(-${
+          activeIndex * slideWidth
+        }px)`;
+        container.style.transition = "0.5s";
+        console.log("end move", activeIndex);
+      };
+
+      const initSwiper = () => {
+        intervalId = setInterval(() => {
+          moveToNextSlide();
+          console.log("next slide");
+        }, intervalTime);
+      };
+
+      const handleTransitionEnd = () => {
+        console.log("start transition end triggered", activeIndex);
+        slides = document.querySelectorAll(".swiper-slide");
+        activeIndex =
+          slides[activeIndex]?.id === firstNode.id
+            ? 1
+            : slides[activeIndex]?.id === lastNode.id
+            ? slides.length - 2
+            : activeIndex;
+        container.style.transform = `translateX(-${
+          activeIndex * slideWidth
+        }px)`;
+        container.style.transition = "none";
+        console.log("end transition end triggered", activeIndex);
+      };
+
+      initSwiper();
+      container.addEventListener("transitionend", handleTransitionEnd);
+    </script>
+  </body>
+</html>

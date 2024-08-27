@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scroll-Based Animation Example</title>
+    <style>
+      body {
+        height: 2000px; /* For demonstration purposes */
+      }
+      .widget {
+        height: 100px;
+        background-color: coral;
+        margin-top: 1400px; /* Adjust as needed */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      .animation-stage {
+        display: none;
+        font-size: 2rem;
+        color: white;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="widget">
+      <div class="animation-stage">Animation 1</div>
+      <div class="animation-stage">Animation 2</div>
+      <div class="animation-stage">Animation 3</div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const widget = document.querySelector(".widget");
+        const animationStages = document.querySelectorAll(".animation-stage");
+        let animationIndex = 0;
+        let scrollingLocked = false;
+
+        const observerOptions = {
+          root: null, // relative to the viewport
+          threshold: 0.5, // Trigger when 50% of the widget is visible
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !scrollingLocked) {
+              const viewportHeight = window.innerHeight;
+              const widgetRect = entry.boundingClientRect;
+              const widgetMiddle = widgetRect.top + widgetRect.height / 2;
+              const viewportMiddle = viewportHeight / 2;
+
+              if (Math.abs(widgetMiddle - viewportMiddle) < 1) {
+                lockScroll();
+                console.log("MIDDLE");
+              }
+            }
+          });
+        }, observerOptions);
+
+        observer.observe(widget);
+
+        function lockScroll() {
+          document.body.style.overflow = "hidden";
+          scrollingLocked = true;
+          executeAnimation();
+        }
+
+        function unlockScroll() {
+          document.body.style.overflow = "";
+          scrollingLocked = false;
+        }
+
+        function executeAnimation() {
+          if (animationIndex < animationStages.length) {
+            const stage = animationStages[animationIndex];
+            stage.style.display = "block";
+            stage.style.transition = "opacity 1s";
+            stage.style.opacity = 1;
+
+            setTimeout(() => {
+              stage.style.opacity = 0;
+              setTimeout(() => {
+                stage.style.display = "none";
+                animationIndex++;
+                executeAnimation();
+              }, 1000);
+            }, 2000);
+          } else {
+            animationIndex = 0;
+            unlockScroll();
+          }
+        }
+
+        function reverseAnimation() {
+          if (animationIndex > 0) {
+            animationIndex--;
+            const stage = animationStages[animationIndex];
+            stage.style.display = "block";
+            stage.style.transition = "opacity 1s";
+            stage.style.opacity = 1;
+
+            setTimeout(() => {
+              stage.style.opacity = 0;
+              setTimeout(() => {
+                stage.style.display = "none";
+                if (animationIndex === 0) {
+                  unlockScroll();
+                }
+              }, 1000);
+            }, 2000);
+          } else {
+            unlockScroll();
+          }
+        }
+
+        window.addEventListener("wheel", (event) => {
+          if (scrollingLocked) {
+            if (event.deltaY > 0 && animationIndex < animationStages.length) {
+              event.preventDefault();
+              executeAnimation();
+            } else if (event.deltaY < 0 && animationIndex > 0) {
+              event.preventDefault();
+              reverseAnimation();
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+* {
+    margin: 0;
+    padding: 0;
+    box—sizing: border-box;
+    font—family: gilroy;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-color: rosybrown;
+    overflow-x: hidden;
+    scrollbar-width: none;
+}
+
+#page1,
+#page2,
+#page3 {
+    height: 100%;
+    width: 100%;
+}
+
+#page1 {
+    background-color: antiquewhite;
+}
+
+#page2 {
+    background-color: aquamarine;
+    display: flex;
+}
+
+#page3 {
+    background-color: rgb(127, 80, 174);
+}
+
+#page2>h1 {
+    font-size: 40vw;
+    margin: auto 0;
+    text-transform: uppercase;
+}
